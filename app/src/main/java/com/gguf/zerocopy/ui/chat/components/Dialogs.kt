@@ -1,0 +1,302 @@
+package com.gguf.zerocopy.ui.chat.components
+import com.gguf.zerocopy.ui.theme.ZcShape
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.gguf.zerocopy.data.repository.LocalModel
+import com.gguf.zerocopy.ui.components.IdentityCyan
+import com.gguf.zerocopy.ui.components.IdentityPurple
+import com.gguf.zerocopy.ui.theme.currentPalette
+
+@Composable
+fun ExportSessionDialog(
+  onDismiss: () -> Unit,
+  onShareText: () -> Unit,
+  onShareJson: () -> Unit
+) {
+  val colors = currentPalette()
+  var exportProgress by remember { mutableFloatStateOf(0f) }
+
+  // Reset progress when dialog is dismissed so next open shows empty bar
+  AlertDialog(
+    onDismissRequest = { exportProgress = 0f; onDismiss() },
+    containerColor = colors.Surface,
+    shape = ZcShape.Lg,
+    title = {
+      Text(
+        text = "Export Session",
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Bold,
+        color = colors.Text
+      )
+    },
+    text = {
+      Column {
+        Text(
+          text = "Choose an export format for sharing this conversation.",
+          fontSize = 13.sp,
+          color = colors.Text2
+        )
+        Spacer(Modifier.height(12.dp))
+        LinearProgressIndicator(
+          progress = { exportProgress },
+          modifier = Modifier.fillMaxWidth(),
+          color = colors.Accent,
+          trackColor = colors.Border
+        )
+        Spacer(Modifier.height(12.dp))
+        TextButton(
+          shape = ZcShape.Pill,
+          onClick = {
+            exportProgress = 1f
+            onShareText()
+          },
+          modifier = Modifier.fillMaxWidth()
+        ) {
+          Icon(
+            Icons.Filled.Share,
+            contentDescription = null,
+            modifier = Modifier.size(18.dp),
+            tint = colors.Text2
+          )
+          Spacer(Modifier.width(8.dp))
+          Text(
+            text = "Share as Text",
+            fontSize = 14.sp,
+            color = colors.Text,
+            modifier = Modifier.weight(1f)
+          )
+          if (exportProgress >= 1f) {
+            Icon(
+              Icons.Filled.Done,
+              contentDescription = null,
+              modifier = Modifier.size(16.dp),
+              tint = colors.Accent2
+            )
+          }
+        }
+        TextButton(
+          shape = ZcShape.Pill,
+          onClick = {
+            exportProgress = 1f
+            onShareJson()
+          },
+          modifier = Modifier.fillMaxWidth()
+        ) {
+          Icon(
+            Icons.Filled.Share,
+            contentDescription = null,
+            modifier = Modifier.size(18.dp),
+            tint = colors.Text2
+          )
+          Spacer(Modifier.width(8.dp))
+          Text(
+            text = "Share as JSON",
+            fontSize = 14.sp,
+            color = colors.Text,
+            modifier = Modifier.weight(1f)
+          )
+          if (exportProgress >= 1f) {
+            Icon(
+              Icons.Filled.Done,
+              contentDescription = null,
+              modifier = Modifier.size(16.dp),
+              tint = colors.Accent2
+            )
+          }
+        }
+      }
+    },
+    confirmButton = {
+      TextButton(shape = ZcShape.Pill, onClick = onDismiss) {
+        Text(text = "Done", color = colors.Accent, fontSize = 14.sp)
+      }
+    }
+  )
+}
+
+@Composable
+fun ModelSelectDialog(
+  models: List<LocalModel>,
+  onSelect: (LocalModel) -> Unit,
+  onDismiss: () -> Unit
+) {
+  val colors = currentPalette()
+
+  AlertDialog(
+    onDismissRequest = onDismiss,
+    containerColor = colors.Surface,
+    shape = ZcShape.Lg,
+    title = {
+      Text(
+        text = "Select Model",
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Bold,
+        color = colors.Text
+      )
+    },
+    text = {
+      if (models.isEmpty()) {
+        Text(
+          text = "No models available. Import a model first.",
+          fontSize = 13.sp,
+          color = colors.Text3,
+          modifier = Modifier.padding(vertical = 24.dp)
+        )
+      } else {
+        LazyColumn(
+          modifier = Modifier.height(300.dp)
+        ) {
+          items(models, key = { it.id }) { model ->
+            Surface(
+              onClick = { onSelect(model) },
+              shape = ZcShape.Lg,
+              color = colors.Card,
+              modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 3.dp)
+            ) {
+              Row(
+                modifier = Modifier.padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+              ) {
+                Column(modifier = Modifier.weight(1f)) {
+                  Text(
+                    text = model.name,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = colors.Text,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                  )
+                  Spacer(Modifier.height(2.dp))
+                  Row {
+                    Text(
+                      text = model.format.uppercase(),
+                      fontSize = 10.sp,
+                      fontFamily = FontFamily.SansSerif,
+                      color = colors.Accent
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                      text = model.sizeFormatted,
+                      fontSize = 10.sp,
+                      fontFamily = FontFamily.SansSerif,
+                      color = colors.Text3
+                    )
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    confirmButton = {
+      TextButton(shape = ZcShape.Pill, onClick = onDismiss) {
+        Text(text = "Cancel", color = colors.Text2, fontSize = 14.sp)
+      }
+    }
+  )
+}
+
+@Composable
+fun DeleteConfirmDialog(
+  onDismiss: () -> Unit,
+  onConfirm: () -> Unit
+) {
+  val colors = currentPalette()
+
+  AlertDialog(
+    onDismissRequest = onDismiss,
+    containerColor = colors.Surface,
+    shape = ZcShape.Lg,
+    title = {
+      Text(
+        text = "Delete message?",
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Bold,
+        color = colors.Text,
+        fontFamily = FontFamily.SansSerif
+      )
+    },
+    text = {
+      Text(
+        text = "This action cannot be undone. The message will be permanently removed.",
+        fontSize = 14.sp,
+        color = colors.Text2,
+        fontFamily = FontFamily.SansSerif
+      )
+    },
+    confirmButton = {
+      Box(
+        modifier = Modifier
+          .clip(ZcShape.Sm)
+          .background(Brush.horizontalGradient(listOf(IdentityCyan, IdentityPurple)))
+          .clickable { onConfirm() },
+        contentAlignment = Alignment.Center
+      ) {
+        Text(
+          text = "Delete",
+          color = Color.Black,
+          fontSize = 12.sp,
+          fontFamily = FontFamily.SansSerif,
+          fontWeight = FontWeight.Bold,
+          modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp)
+        )
+      }
+    },
+    dismissButton = {
+      TextButton(shape = ZcShape.Pill, onClick = onDismiss) {
+        Text(text = "Cancel", color = colors.Text2, fontSize = 14.sp, fontFamily = FontFamily.SansSerif)
+      }
+    }
+  )
+}
+
+fun getFileName(context: android.content.Context, uri: android.net.Uri): String {
+  var name = "unknown"
+  context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+    val idx = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+    if (idx >= 0 && cursor.moveToFirst()) name = cursor.getString(idx)
+  }
+  return name
+}
+
+
