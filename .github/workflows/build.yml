@@ -110,8 +110,10 @@ jobs:
           sed -i "s/versionName\s*=\s*\"$CURRENT_NAME\"/versionName = \"$NEW_NAME\"/" app/build.gradle.kts
           # Update buildConfigField VERSION_CODE
           sed -i "s/buildConfigField(\"int\", \"VERSION_CODE\", \"$CURRENT_CODE\")/buildConfigField(\"int\", \"VERSION_CODE\", \"$NEW_CODE\")/" app/build.gradle.kts
-          # Update buildConfigField VERSION_NAME
-          sed -i "s/buildConfigField(\"String\", \"VERSION_NAME\", \"$CURRENT_NAME\")/buildConfigField(\"String\", \"VERSION_NAME\", \"$NEW_NAME\")/" app/build.gradle.kts
+          # Update buildConfigField VERSION_NAME (value is stored as an escaped
+          # quoted string, e.g. "\"1071\"" — match any current value, not just
+          # $CURRENT_NAME, so a previously-desynced value self-heals here too)
+          sed -i -E "s/(buildConfigField\(\"String\", \"VERSION_NAME\", \")\\\\\"[^\\\\]*\\\\\"(\"\))/\1\\\\\"$NEW_NAME\\\\\"\2/" app/build.gradle.kts
           
           # Verify changes
           echo "Updated build.gradle.kts:"
@@ -122,7 +124,22 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add app/build.gradle.kts
           git commit -m "chore: bump version to $NEW_NAME [skip ci]"
-          git push
+
+          # Push with retry: another run (or a manual push) may have landed on
+          # master in the meantime, which rejects a plain push as non-fast-forward.
+          # Rebase our one commit onto the latest master and retry a few times.
+          for i in 1 2 3 4 5; do
+            if git push; then
+              break
+            fi
+            echo "Push rejected (attempt $i) — fetching and rebasing onto latest master"
+            git fetch origin master
+            git rebase origin/master
+            if [ "$i" -eq 5 ]; then
+              echo "::error::Failed to push version bump after 5 attempts"
+              exit 1
+            fi
+          done
 
       - name: Build Rust core for Android
         run: |
