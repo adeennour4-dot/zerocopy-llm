@@ -484,7 +484,8 @@ fun ChatScreen(
   }
 
   LaunchedEffect(inferenceState) {
-    if (inferenceState is InferenceState.Streaming && inferenceState.content.isNotEmpty()) {
+    val currentState = inferenceState
+    if (currentState is InferenceState.Streaming && currentState.content.isNotEmpty()) {
       listState.animateScrollToItem(messages.size)
     }
   }

@@ -32,7 +32,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
@@ -66,6 +65,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.sp
 import com.gguf.zerocopy.data.repository.AttachmentType
 import com.gguf.zerocopy.data.repository.MessageRole
@@ -127,7 +127,7 @@ fun ChatBubble(
   val (slideIn, slideOut) = if (animationIntensity == AnimationIntensity.NONE) {
     Pair(EnterTransition.None, ExitTransition.None)
   } else {
-    val spec = tween(entranceDuration, easing = { t -> 1 - (1 - t).pow(3) })
+    val spec = tween<IntOffset>(entranceDuration, easing = { t -> 1 - (1 - t).pow(3) })
     Pair(slideInVertically(spec, initialOffsetY = { it / 3 }), slideOutVertically(spec, targetOffsetY = { -it / 3 }))
   }
 
