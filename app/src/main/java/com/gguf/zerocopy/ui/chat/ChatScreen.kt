@@ -151,28 +151,31 @@ fun ChatScreen(
 
   var chatId by remember { mutableStateOf(sessionId) }
 
-  val inferenceController = remember {
-    InferenceController(
-      scope = scope,
-      engine = engine!!,
-      ragEngine = app.ragEngine,
-      chatRepository = app.chatRepository,
-      context = context,
-      settingsManager = SettingsManager,
-      modelPath = modelPath,
-      modelName = modelName,
-      modelReasoningOk = engine.modelInfo?.supportsReasoning ?: true,
-      onMessageSent = { _ -> },
-      onError = { error ->
-        scope.launch { snackbarHostState.showSnackbar("Inference error: $error") }
-      }
-    )
+  val inferenceController = remember(engine) {
+    engine?.let { eng ->
+      InferenceController(
+        scope = scope,
+        engine = eng,
+        ragEngine = app.ragEngine,
+        chatRepository = app.chatRepository,
+        context = context,
+        settingsManager = SettingsManager,
+        modelPath = modelPath,
+        modelName = modelName,
+        modelReasoningOk = eng.modelInfo?.supportsReasoning ?: true,
+        onMessageSent = { _ -> },
+        onError = { error ->
+          scope.launch { snackbarHostState.showSnackbar("Inference error: $error") }
+        }
+      )
+    }
   }
-  val inferenceState by inferenceController.state.collectAsStateWithLifecycle()
+  val inferenceState by (inferenceController?.state?.collectAsStateWithLifecycle()
+    ?: remember { mutableStateOf(InferenceState.Idle) })
 
   fun startNewChat() {
     chatId = null
-    inferenceController.stopInference()
+    inferenceController?.stopInference()
     app.chatRepository.createSession(modelPath = modelPath, modelName = modelName)
     chatId = app.chatRepository.currentSessionId
   }
@@ -355,7 +358,12 @@ fun ChatScreen(
   }
 
   fun sendMessage(text: String, uris: List<Uri>, names: List<String>) {
-    inferenceController.sendMessage(
+    val controller = inferenceController
+    if (controller == null) {
+      scope.launch { snackbarHostState.showSnackbar("Load a model first") }
+      return
+    }
+    controller.sendMessage(
       text = text,
       uris = uris,
       names = names,
@@ -379,7 +387,7 @@ fun ChatScreen(
   }
 
   fun stopInference() {
-    inferenceController.stopInference()
+    inferenceController?.stopInference()
   }
 
   fun copyToClipboard(text: String) {
