@@ -30,6 +30,11 @@ jobs:
             cat gradle/wrapper/gradle-wrapper.jar
             exit 1
           fi
+          if ! unzip -l gradle/wrapper/gradle-wrapper.jar | grep -q "org/gradle/wrapper/GradleWrapperMain.class"; then
+            echo "::error::gradle/wrapper/gradle-wrapper.jar is a valid zip but is missing org/gradle/wrapper/GradleWrapperMain.class — it's corrupted or the wrong file. Replace it with a known-good wrapper jar (e.g. via 'gradle wrapper' locally) and recommit."
+            unzip -l gradle/wrapper/gradle-wrapper.jar
+            exit 1
+          fi
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
