@@ -90,6 +90,7 @@ import com.gguf.zerocopy.ui.sessions.SessionListScreen
 import com.gguf.zerocopy.ui.settings.SettingsScreen
 import com.gguf.zerocopy.ui.settings.ThemeSettingsScreen
 import com.gguf.zerocopy.ui.theme.ThemeManagerInstance
+import com.gguf.zerocopy.ui.theme.ThemeState
 import com.gguf.zerocopy.ui.theme.ZeroCopyTheme
 import com.gguf.zerocopy.ui.theme.ZcPalette
 import com.gguf.zerocopy.ui.theme.currentPalette
@@ -139,8 +140,15 @@ class MainActivity : ComponentActivity() {
     }
     
     setContent {
-      val themeConfig by ThemeManagerInstance.instance.config.collectAsState()
-      val darkTheme = themeConfig.isDark
+      // Theme mode selector (System/Dark/Light) drives the palette. themeMode
+      // values: "system" (follow OS), "dark", "light" — see SettingsScreen.
+      val themeMode = ThemeState.themeMode
+      val systemDark = isSystemInDarkTheme()
+      val darkTheme = when (themeMode) {
+        "dark" -> true
+        "light" -> false
+        else -> systemDark
+      }
       ZeroCopyTheme(darkTheme = darkTheme) { AppRoot() }
     }
   }
