@@ -53,10 +53,13 @@ class ZeroCopyApp : Application() {
 
     jobManager = JobManager()
     deviceUtils = DeviceUtils(this)
-    engineManager = EngineManager(this)
+    // Detect the device once and share the result with the engine layer, the
+    // Rust core and first-run defaults — each detect() call probes sysfs and
+    // dlopens OpenCL, so repeating it is wasteful and invites inconsistency.
+    val deviceInfo = deviceUtils.detect()
+    engineManager = EngineManager(this, deviceInfo.hasVulkan)
 
     // Initialize Rust optimization layer (optional — silently no-ops if native lib is unavailable)
-    val deviceInfo = deviceUtils.detect()
     RustCore.init(deviceInfo.totalRamMB, deviceInfo.cpuCores)
     modelRepository = ModelRepository(this)
     chatRepository = ChatRepository(this)
@@ -66,7 +69,6 @@ class ZeroCopyApp : Application() {
     // Apply device-optimized inference settings on FIRST launch.
     // After the user has customized their settings, we never override.
     if (!SettingsManager.welcomeDone) {
-      val deviceInfo = deviceUtils.detect()
       SettingsManager.applyDeviceDefaults(deviceInfo)
     }
 

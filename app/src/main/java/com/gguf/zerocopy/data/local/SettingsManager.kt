@@ -322,7 +322,9 @@ object SettingsManager {
 
   var gpuLayers: Int
     get() = prefs?.getInt("gpu_layers", 0) ?: 0
-    set(v) { prefs?.edit()?.putInt("gpu_layers", v)?.apply() }
+    // 0 = CPU-only, 999 = offload every layer. Clamp on write so corrupt or
+    // stale preference values can never produce an absurd native config.
+    set(v) { prefs?.edit()?.putInt("gpu_layers", v.coerceIn(0, 999))?.apply() }
 
   /** Compute backend selection.
    *  "auto" (default) honors the GPU Layers slider.
@@ -332,9 +334,20 @@ object SettingsManager {
     get() = prefs?.getString("backend", "auto") ?: "auto"
     set(v) { prefs?.edit()?.putString("backend", v)?.apply() }
 
+  /** True once the user has explicitly saved compute settings.
+   *  First-run device seeding and compat-build defaults do NOT set this.
+   *  Model load uses it to decide whether model-size-aware context/batch
+   *  tuning may still be applied on top of the global preferences, instead
+   *  of silently overriding what the user chose. */
+  var userCustomized: Boolean
+    get() = prefs?.getBoolean("user_customized", false) ?: false
+    set(v) { prefs?.edit()?.putBoolean("user_customized", v)?.apply() }
+
   var threads: Int
     get() = prefs?.getInt("threads", 4) ?: 4
-    set(v) { prefs?.edit()?.putInt("threads", v)?.apply() }
+    // 0 = auto (native default), 1–16 explicit. Clamp on write for the same
+    // reason as gpuLayers — keep the native thread config well-formed.
+    set(v) { prefs?.edit()?.putInt("threads", v.coerceIn(0, 16))?.apply() }
 
   var repeatPenalty: Float
     get() = prefs?.getFloat("repeat_penalty", 1.1f) ?: 1.1f
@@ -559,6 +572,8 @@ object SettingsManager {
     lowRamMode = config.lowRamMode
     flashAttention = config.flashAttention
     mmprojPath = config.mmprojPath
+    backend = config.backend
+    userCustomized = true
     repeatPenalty = rp.repeatPenalty
     freqPenalty = rp.freqPenalty
     presPenalty = rp.presPenalty

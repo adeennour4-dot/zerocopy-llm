@@ -2,12 +2,12 @@ package com.gguf.zerocopy.domain.inference
 
 import android.content.Context
 
-class EngineManager(context: Context) {
+class EngineManager(context: Context, hasVulkan: Boolean = false) {
   private val engines = mutableMapOf<EngineType, InferenceEngine>()
   private var activeEngine: InferenceEngine? = null
 
   val llamaCpp: LlamaCppEngine = LlamaCppEngine()
-  val mnn: MnnEngine = MnnEngine()
+  val mnn: MnnEngine = MnnEngine(autoVulkan = hasVulkan)
   val liteRt: InferenceEngine = try {
     LiteRtEngine()
   } catch (e: Throwable) {

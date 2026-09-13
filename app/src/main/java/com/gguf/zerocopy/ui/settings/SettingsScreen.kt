@@ -113,6 +113,9 @@ fun SettingsScreen(onBack: () -> Unit) {
   val snackbarHostState = remember { SnackbarHostState() }
   val colors = currentPalette()
   val focusManager = LocalFocusManager.current
+  // Device capability snapshot shown in the Compute Backend card so "auto"
+  // backend behavior is transparent (why GPU offload is / isn't suggested).
+  val deviceInfo = remember { app.deviceUtils.detect() }
 
   // ── State ───────────────────────────────────────────────────────────[...]
   var nCtx by remember { mutableStateOf(SettingsManager.nCtx.toString()) }
@@ -341,6 +344,18 @@ fun SettingsScreen(onBack: () -> Unit) {
             },
             fontSize = 9.sp, color = colors.Text3, fontFamily = FontFamily.Monospace,
             modifier = Modifier.padding(top = 2.dp)
+          )
+          Spacer(Modifier.height(2.dp))
+          Text(
+            "Device: ${deviceInfo.socModel.ifBlank { "Unknown SoC" }} · " +
+              "${deviceInfo.cpuCores} cores · ${deviceInfo.totalRamMB / 1024} GB RAM",
+            fontSize = 9.sp, color = colors.Text3, fontFamily = FontFamily.Monospace,
+            modifier = Modifier.padding(top = 4.dp)
+          )
+          Text(
+            "Vulkan: ${if (deviceInfo.hasVulkan) "available" else "not detected"}" +
+              (if (deviceInfo.hasVulkan && (deviceInfo.isSnapdragon || deviceInfo.isTensor)) " — GPU offload suggested" else ""),
+            fontSize = 9.sp, color = colors.Text3, fontFamily = FontFamily.Monospace
           )
           Spacer(Modifier.height(6.dp))
           InlineField("Batch Size", "512–8192", batch, { batch = it }, focusManager)

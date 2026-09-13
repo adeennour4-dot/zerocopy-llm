@@ -9,7 +9,7 @@ import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 
-class MnnEngine : InferenceEngine {
+class MnnEngine(private val autoVulkan: Boolean = false) : InferenceEngine {
   override val engineType = EngineType.MNN
   override val engineName = "MNN"
   override var isModelLoaded = false
@@ -212,7 +212,11 @@ class MnnEngine : InferenceEngine {
   private fun mapBackend(backend: String): String = when (backend) {
     "gpu" -> "vulkan"
     "cpu" -> "cpu"
-    else -> "cpu" // "auto" → CPU, which is MNN's safe default when no Vulkan device is present
+    // "auto": honor the device's Vulkan capability (probed once at engine
+    // construction). MNN's Vulkan backend is mature on both Adreno and Mali,
+    // so auto-offloading on a Vulkan-capable chip is the safe, fast default —
+    // matching llama.cpp's "auto honors the GPU Layers slider" behavior.
+    else -> if (autoVulkan) "vulkan" else "cpu"
   }
 
   override fun supportsFormat(path: String): Boolean = path.endsWith(".mnn", true)

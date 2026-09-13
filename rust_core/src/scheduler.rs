@@ -87,7 +87,11 @@ impl InferenceScheduler {
     }
 
     fn has_gpu_capability(&self) -> bool {
+        // Check both 32-bit and 64-bit vendor libraries — arm64 devices keep
+        // the Vulkan ICD at /vendor/lib64/libvulkan.so, not /vendor/lib/.
         std::path::Path::new("/vendor/lib/libvulkan.so").exists()
+            || std::path::Path::new("/vendor/lib64/libvulkan.so").exists()
+            || std::path::Path::new("/system/lib/libOpenCL.so").exists()
             || std::path::Path::new("/system/lib64/libOpenCL.so").exists()
     }
 

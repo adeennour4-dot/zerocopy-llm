@@ -1016,15 +1016,32 @@ private suspend fun loadModel(
   val expertUsedCount = ggufInfo?.expertUsedCount ?: 0
 
   val perModelCfg = SettingsManager.getModelTokenConfig(model.path)
-  val config = if (perModelCfg != null) {
-    SettingsManager.toConfig(model.path)
+  // Always flow through SettingsManager.toConfig() so the user's global
+  // backend / GPU layers / threads choices are honored even when no per-model
+  // config exists. Previously a raw device suggestion silently overrode the
+  // user's "CPU only" / GPU-layers setting for every unconfigured model.
+  val baseConfig = SettingsManager.toConfig(model.path)
+  val config = if (perModelCfg != null || SettingsManager.userCustomized) {
+    baseConfig
   } else {
-    deviceInfo.suggestConfig(
+    // Pristine install (no per-model config, settings never saved): adopt the
+    // model-size-aware context/batch sizing DeviceUtils suggests, but keep the
+    // seeded global backend / GPU / thread choices.
+    val sizeTuned = deviceInfo.suggestConfig(
       modelSizeB = estimatedParamsB,
       isMoE = isMoE,
       expertCount = expertCount,
       expertUsedCount = expertUsedCount
     )
+    baseConfig.copy(
+      nCtx = sizeTuned.nCtx,
+      nBatch = sizeTuned.nBatch,
+      maxNewTokens = sizeTuned.maxNewTokens
+    )
+  }.let {
+    // MoE models: keep CPU + mmap unless the user explicitly chose GPU,
+    // because GPU offload loads every expert into VRAM at once.
+    if (isMoE && it.backend != "gpu" && it.nGpuLayers > 0) it.copy(nGpuLayers = 0) else it
   }
 
   val tunedConfig = if (ggufInfo != null) {
