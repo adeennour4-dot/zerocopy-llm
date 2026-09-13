@@ -212,6 +212,7 @@ fun InventDashboardScreen(
     onDeleteProject: (String) -> Unit,
     onNewProject: (String, String) -> Unit,
     onDiagnostics: () -> Unit,
+    onModelLoad: () -> Unit,
     onStartSession: (InventProject) -> Unit,
     onOpenSession: (InventProject, String) -> Unit,
     onBack: () -> Unit
@@ -257,6 +258,10 @@ fun InventDashboardScreen(
             Spacer(Modifier.width(8.dp))
             Surface(onClick = onDiagnostics, shape = ZcShape.Sm, color = CardLight, border = BorderStroke(0.2.dp, Line), modifier = Modifier.size(40.dp)) {
                 Box(contentAlignment = Alignment.Center) { Icon(Icons.Filled.BugReport, "Diagnostics", tint = Cy, modifier = Modifier.size(18.dp)) }
+            }
+            Spacer(Modifier.width(8.dp))
+            Surface(onClick = onModelLoad, shape = ZcShape.Sm, color = CardLight, border = BorderStroke(0.2.dp, Line), modifier = Modifier.size(40.dp)) {
+                Box(contentAlignment = Alignment.Center) { Icon(Icons.Filled.Memory, "Model Dock", tint = Pr, modifier = Modifier.size(18.dp)) }
             }
         }
         Box(

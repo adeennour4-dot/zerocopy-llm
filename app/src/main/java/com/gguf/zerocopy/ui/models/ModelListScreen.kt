@@ -69,6 +69,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gguf.zerocopy.ZeroCopyApp
+import com.gguf.zerocopy.data.local.ModelLoadMonitor
 import com.gguf.zerocopy.data.local.SettingsManager
 import com.gguf.zerocopy.data.repository.LocalModel
 import com.gguf.zerocopy.domain.inference.BenchmarkResult
@@ -184,10 +185,12 @@ fun ModelListScreen(
       result.data?.data?.let { uri ->
         val name = getFileName(context, uri)
         loadingState = ModelLoadingState.Loading("Importing model…")
+        ModelLoadMonitor.begin(name, "Importing model…")
         scope.launch {
           app.modelRepository.importUri(uri, name)
             .onSuccess { model ->
               loadingState = ModelLoadingState.Idle
+              ModelLoadMonitor.clear()
               // Validate imported model
               validateImportedModel(model)
               // Show settings dialog before loading
@@ -196,6 +199,7 @@ fun ModelListScreen(
             }
             .onFailure { error ->
               loadingState = ModelLoadingState.Idle
+              ModelLoadMonitor.clear()
               scope.launch {
                 snackbarHostState.showSnackbar("Import failed: ${error.message?.take(100) ?: "Unknown error"}")
               }
@@ -296,6 +300,7 @@ fun ModelListScreen(
         }
         engine?.unloadModel()
       }
+      ModelLoadMonitor.clear()
       app.modelRepository.deleteModel(model.id)
       modelToDelete = null
     }
@@ -408,6 +413,7 @@ fun ModelListScreen(
               loadingJob?.cancel()
               loadingJob = null
               loadingState = ModelLoadingState.Idle
+              ModelLoadMonitor.clear()
               // If model was partially loaded, unload it
               val engine = app.engineManager.getActiveEngine()
               if (engine?.loadedModelPath != null) {
@@ -997,6 +1003,7 @@ private suspend fun loadModel(
 ): String? {
   val app = ZeroCopyApp.instance
   val engine = app.engineManager.selectEngineForFormat(model.path)
+  ModelLoadMonitor.begin(model.name, "Preparing ${engine.engineName}…")
 
   // Use per-model token config from SettingsManager (default: 1024 ctx, 1024 maxNew).
   // If no per-model config is set, fall back to device-suggested defaults.
@@ -1069,6 +1076,7 @@ private suspend fun loadModel(
   Log.i("ModelList", "RustCore: pressure=${rustAdvice.underPressure} advThreads=${rustThreadCfg.decodeThreads}")
 
   engine.config = optimizedConfig
+  ModelLoadMonitor.step("Configuring ${engine.engineType.id}…")
   engine.repeatPenalty = SettingsManager.toRepeatPenalty()
   engine.systemPrompt = SettingsManager.systemPrompt
   engine.chatTemplate = SettingsManager.chatTemplate
@@ -1088,12 +1096,14 @@ private suspend fun loadModel(
     "ram=${deviceInfo.totalRamMB/1024}GB modelSize=${String.format("%.1f", estimatedParamsB)}B" +
     if (perModelCfg != null) " (from per-model config)" else " (from device defaults)")
 
+  ModelLoadMonitor.step("Loading into ${engine.engineName}…")
   val loadResult = try {
     withContext(Dispatchers.IO) {
       engine.loadModel(model.path)
     }
   } catch (e: Exception) {
     Log.e("ModelList", "Exception loading model: ${e.message}")
+    ModelLoadMonitor.failed(model.name, e.message ?: "Unknown error")
     return e.message ?: "Unknown error"
   }
 
@@ -1101,14 +1111,17 @@ private suspend fun loadModel(
   val innerError = loadResult.exceptionOrNull()
   if (innerError != null) {
     Log.e("ModelList", "Failed to load model: ${innerError.message}")
+    ModelLoadMonitor.failed(model.name, innerError.message ?: "Unknown error")
     return innerError.message ?: "Unknown error"
   }
 
   if (isCancelled()) {
     engine.unloadModel()
+    ModelLoadMonitor.clear()
     return null
   }
 
+  ModelLoadMonitor.ready(model.path, model.name)
   app.modelRepository.markUsed(model.id)
   onModelSelected(model.path, model.name)
   return null

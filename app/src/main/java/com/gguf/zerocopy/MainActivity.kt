@@ -97,6 +97,7 @@ import com.gguf.zerocopy.ui.theme.currentPalette
 import com.gguf.zerocopy.data.invent.InventProjectStore
 import com.gguf.zerocopy.ui.invent.DiagnosticsScreen
 import com.gguf.zerocopy.ui.invent.InventDashboardScreen
+import com.gguf.zerocopy.ui.invent.ModelLoadingScreen
 import com.gguf.zerocopy.ui.invent.InventScreen
 import com.gguf.zerocopy.ui.invent.InventViewModel
 import kotlinx.coroutines.delay
@@ -182,6 +183,7 @@ fun AppRoot() {
   var inventProjectId by rememberSaveable { mutableStateOf("") }
   var inventSessionId by rememberSaveable { mutableStateOf("") } // "" = start a fresh session
   var showDiagnostics by rememberSaveable { mutableStateOf(false) }
+  var showModelDock by rememberSaveable { mutableStateOf(false) }
 
   val inventContext = LocalContext.current
   var inventProjects by remember { mutableStateOf(InventProjectStore.listProjects(inventContext)) }
@@ -361,6 +363,14 @@ fun AppRoot() {
             models = inventModels,
             onBack = { showDiagnostics = false }
           )
+        } else if (showModelDock) {
+          ModelLoadingScreen(
+            onBack = { showModelDock = false },
+            onModelsClick = {
+              showModelDock = false
+              selectedTab = 1
+            }
+          )
         } else {
         when (inventScreen) {
           "chat" -> {
@@ -428,6 +438,7 @@ fun AppRoot() {
                   inventProjects = InventProjectStore.listProjects(inventContext)
                 },
                 onDiagnostics = { showDiagnostics = true },
+                onModelLoad = { showModelDock = true },
                 onClearProject = { id ->
                   InventProjectStore.clearProjectContents(inventContext, id)
                   inventProjects = InventProjectStore.listProjects(inventContext)
