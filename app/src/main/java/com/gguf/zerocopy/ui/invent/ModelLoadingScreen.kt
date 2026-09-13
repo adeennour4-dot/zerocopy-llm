@@ -9,9 +9,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Cpu
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.SmartToy
@@ -288,7 +288,7 @@ private fun EngineDock(app: ZeroCopyApp, colors: ZcPalette) {
   Surface(shape = ZcShape.Lg, color = colors.Card, border = BorderStroke(0.2.dp, colors.Border)) {
     Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
       Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(Icons.Filled.Cpu, null, tint = colors.Cyan, modifier = Modifier.size(13.dp))
+        Icon(Icons.Filled.Build, null, tint = colors.Cyan, modifier = Modifier.size(13.dp))
         Spacer(Modifier.width(6.dp))
         Text("ENGINES", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = colors.Cyan, fontFamily = FontFamily.Monospace)
       }
