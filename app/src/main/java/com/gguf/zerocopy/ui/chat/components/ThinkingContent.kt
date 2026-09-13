@@ -91,7 +91,7 @@ fun ThinkingContent(
             .padding(horizontal = 10.dp)
             .padding(bottom = 10.dp),
           shape = ZcShape.Sm,
-          color = colors.Card,
+          color = colors.CardLight,
           tonalElevation = 0.dp
         ) {
           Text(

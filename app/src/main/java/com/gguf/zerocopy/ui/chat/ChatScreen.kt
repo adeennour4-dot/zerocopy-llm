@@ -648,10 +648,15 @@ fun ChatScreen(
               }
             )
           }
+}
+        // Sunrise hairline — frames the chat header like the nav bar below
+        Box(
+          Modifier.fillMaxWidth().height(2.dp)
+            .background(Brush.horizontalGradient(listOf(colors.GradientStart, colors.GradientEnd)))
+        )
         }
-       }
-       }
-    },
+        }
+        },
     bottomBar = {
       Column(modifier = Modifier.fillMaxWidth().imePadding()) {
         if (!modelReasoningOk) {
@@ -787,37 +792,37 @@ fun ChatScreen(
           verticalArrangement = Arrangement.Center,
           horizontalAlignment = Alignment.CenterHorizontally
         ) {
-          Box(contentAlignment = Alignment.Center, modifier = Modifier.size(88.dp)) {
+          Box(contentAlignment = Alignment.Center, modifier = Modifier.size(96.dp)) {
             Box(
-              Modifier.size(88.dp).background(
-                Brush.radialGradient(listOf(colors.Accent.copy(alpha = 0.16f), colors.Accent.copy(alpha = 0f))),
+              Modifier.size(96.dp).background(
+                Brush.radialGradient(listOf(colors.GradientStart.copy(alpha = 0.18f), colors.GradientStart.copy(alpha = 0f))),
                 CircleShape
               )
             )
             Box(
-              Modifier.size(54.dp).clip(RoundedCornerShape(22.dp))
+              Modifier.size(58.dp).clip(RoundedCornerShape(24.dp))
                 .background(Brush.linearGradient(listOf(colors.GradientStart, colors.GradientEnd))),
               contentAlignment = Alignment.Center
             ) {
-              Icon(Icons.Filled.Chat, null, tint = Color.White, modifier = Modifier.size(24.dp))
+              Icon(Icons.Filled.Chat, null, tint = Color.White, modifier = Modifier.size(26.dp))
             }
           }
-          Spacer(Modifier.height(18.dp))
+          Spacer(Modifier.height(20.dp))
           Text(
             text = if (engine?.isModelLoaded == true) "Start a conversation"
                    else "No model loaded",
             color = if (engine?.isModelLoaded == true) colors.Text else colors.Amber,
-            fontSize = 17.sp,
+            fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             fontFamily = FontFamily.SansSerif
           )
-          Spacer(Modifier.height(6.dp))
+          Spacer(Modifier.height(8.dp))
           Text(
             text = if (engine?.isModelLoaded == true)
               "Ask anything — attach files, search the web, or think step by step."
             else "Tap the model name at the top to load one",
             color = colors.Text3,
-            fontSize = 11.5.sp,
+            fontSize = 12.sp,
             fontFamily = FontFamily.SansSerif,
             textAlign = TextAlign.Center
           )

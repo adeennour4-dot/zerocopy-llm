@@ -324,6 +324,10 @@ fun InventScreen(
                 }
                 // Flow ribbon pipeline
                 FlowRibbon(phase = ui.phase, animColor = animPhaseColor, colors = colors)
+                Box(
+                    Modifier.fillMaxWidth().height(2.dp)
+                        .background(Brush.horizontalGradient(listOf(colors.GradientStart, colors.GradientEnd)))
+                )
             }
 
             // ══ Model status monograms ══

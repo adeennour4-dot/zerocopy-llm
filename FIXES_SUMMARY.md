@@ -99,12 +99,12 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/adeennour4-dot/111.git
-cd 111
+git clone https://github.com/adeennour4-dot/zerocopy-llm.git
+cd zerocopy-llm
 
-# Build the APK (debug)
-./gradlew assembleDebug
+# Build the APK (debug) — pick a flavor, "assembleDebug" alone is ambiguous
+./gradlew assembleStandardDebug
 
 # Install on device
-adb install app/build/outputs/apk/debug/app-debug.apk
+adb install app/build/outputs/apk/standard/debug/app-standard-debug.apk
 ```

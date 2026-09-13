@@ -1,12 +1,16 @@
 # Android build outputs
 app/build/
 build/
+.cxx/
+.kotlin/
 local.properties
 *.iml
 .idea/
 .gradle/
 *.apk
 *.aab
+*.hprof
+captures/
 
 # Native libraries — built by CI, not committed
 app/src/main/jniLibs/

@@ -13,6 +13,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -302,6 +303,7 @@ fun ModelListScreen(
 
   Scaffold(
     topBar = {
+      Column {
       TopAppBar(
         title = { Text("Models", fontWeight = FontWeight.Bold, color = colors.Text) },
         navigationIcon = {
@@ -326,6 +328,11 @@ fun ModelListScreen(
         },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = colors.Bg)
       )
+      Box(
+        Modifier.fillMaxWidth().height(2.dp)
+          .background(Brush.horizontalGradient(listOf(colors.GradientStart, colors.GradientEnd)))
+      )
+      }
     },
     snackbarHost = { SnackbarHost(snackbarHostState) },
     containerColor = colors.Bg

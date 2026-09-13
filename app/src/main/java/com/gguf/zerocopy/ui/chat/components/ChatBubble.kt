@@ -20,6 +20,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -54,6 +55,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -136,15 +138,15 @@ Row(
     if (!isUser) {
       Box(
         modifier = Modifier
-          .size(24.dp)
+          .size(26.dp)
           .clip(ZcShape.Xs)
-          .background(colors.CardLight),
+          .background(Brush.linearGradient(listOf(colors.GradientStart, colors.GradientEnd))),
         contentAlignment = Alignment.Center
       ) {
         Text(
           text = "Z",
-          fontSize = 11.sp,
-          color = colors.Accent,
+          fontSize = 12.sp,
+          color = Color.White,
           fontWeight = FontWeight.Bold,
           fontFamily = FontFamily.SansSerif,
           textAlign = TextAlign.Center
@@ -377,15 +379,16 @@ Row(
       Spacer(Modifier.width(8.dp))
       Box(
         modifier = Modifier
-          .size(24.dp)
+          .size(26.dp)
           .clip(ZcShape.Xs)
-          .background(colors.UserBg),
+          .background(colors.UserBg)
+          .border(1.dp, colors.Accent.copy(alpha = 0.35f), ZcShape.Xs),
         contentAlignment = Alignment.Center
       ) {
         Text(
           text = "Y",
-          fontSize = 11.sp,
-          color = colors.Text2,
+          fontSize = 12.sp,
+          color = colors.Accent,
           fontWeight = FontWeight.Bold,
           fontFamily = FontFamily.SansSerif,
           textAlign = TextAlign.Center

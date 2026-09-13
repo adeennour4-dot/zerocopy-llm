@@ -172,10 +172,15 @@ ZeroCopy targets **Android 10+ (API 29), arm64-v8a**, with specific fixes for lo
 
 ```bash
 git clone https://github.com/adeennour4-dot/zerocopy-llm
-cd 111
-./gradlew assembleDebug
-adb install app/build/outputs/apk/debug/app-debug.apk
+cd zerocopy-llm
+./gradlew assembleStandardDebug
+adb install app/build/outputs/apk/standard/debug/app-standard-debug.apk
 ```
+
+Two build variants exist (product flavors); `assembleDebug` alone is ambiguous, so pick one:
+
+- `./gradlew assembleStandardDebug` — full-performance build (`armv8.2-a+dotprod` baseline).
+- `./gradlew assembleCompatibilityDebug` — maximum-safety build (plain `armv8-a`, no LTO, conservative defaults) for older / unusual ARM64 devices.
 
 **Requirements**
 

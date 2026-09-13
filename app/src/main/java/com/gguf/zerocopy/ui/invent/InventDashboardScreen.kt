@@ -259,6 +259,10 @@ fun InventDashboardScreen(
                 Box(contentAlignment = Alignment.Center) { Icon(Icons.Filled.BugReport, "Diagnostics", tint = Cy, modifier = Modifier.size(18.dp)) }
             }
         }
+        Box(
+            Modifier.fillMaxWidth().height(2.dp)
+                .background(Brush.horizontalGradient(listOf(currentPalette().GradientStart, currentPalette().GradientEnd)))
+        )
 
         // ── New project CTA ──
         Surface(

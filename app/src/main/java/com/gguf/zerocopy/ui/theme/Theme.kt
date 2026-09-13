@@ -26,11 +26,11 @@ object ThemeState {
 }
 
 object ZcShape {
-    val Xs = RoundedCornerShape(8.dp)
+    val Xs = RoundedCornerShape(10.dp)
     val Sm = RoundedCornerShape(14.dp)
-    val Md = RoundedCornerShape(20.dp)
-    val Lg = RoundedCornerShape(26.dp)
-    val Xl = RoundedCornerShape(32.dp)
+    val Md = RoundedCornerShape(18.dp)
+    val Lg = RoundedCornerShape(24.dp)
+    val Xl = RoundedCornerShape(30.dp)
     val Pill = RoundedCornerShape(50)
     val Circle = RoundedCornerShape(50)
 }
@@ -128,21 +128,21 @@ private val LightScheme = lightColorScheme(
 )
 
 val ZcTypography = Typography(
-    displayLarge = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 46.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-1).sp),
-    displayMedium = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 36.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.5).sp),
-    displaySmall = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 28.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.25).sp),
-    headlineLarge = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 24.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.25).sp),
-    headlineMedium = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.sp),
-    headlineSmall = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.sp),
-    titleLarge = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.sp),
-    titleMedium = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.1.sp),
-    titleSmall = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 12.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.2.sp),
-    bodyLarge = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 16.sp, lineHeight = 24.sp, fontWeight = FontWeight.Normal, letterSpacing = 0.2.sp),
-    bodyMedium = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 14.sp, lineHeight = 21.sp, fontWeight = FontWeight.Normal, letterSpacing = 0.15.sp),
-    bodySmall = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 12.sp, lineHeight = 18.sp, fontWeight = FontWeight.Normal, letterSpacing = 0.1.sp),
-    labelLarge = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.1.sp),
-    labelMedium = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 12.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.3.sp),
-    labelSmall = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 10.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.4.sp),
+    displayLarge = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 42.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-1).sp, lineHeight = 48.sp),
+    displayMedium = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 34.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.5).sp, lineHeight = 40.sp),
+    displaySmall = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 27.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.25).sp, lineHeight = 33.sp),
+    headlineLarge = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 23.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.25).sp, lineHeight = 30.sp),
+    headlineMedium = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.sp, lineHeight = 27.sp),
+    headlineSmall = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 17.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.sp, lineHeight = 24.sp),
+    titleLarge = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.sp, lineHeight = 22.sp),
+    titleMedium = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.1.sp, lineHeight = 20.sp),
+    titleSmall = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 12.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.2.sp, lineHeight = 17.sp),
+    bodyLarge = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 16.sp, lineHeight = 25.sp, fontWeight = FontWeight.Normal, letterSpacing = 0.2.sp),
+    bodyMedium = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 14.sp, lineHeight = 22.sp, fontWeight = FontWeight.Normal, letterSpacing = 0.15.sp),
+    bodySmall = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 12.sp, lineHeight = 19.sp, fontWeight = FontWeight.Normal, letterSpacing = 0.1.sp),
+    labelLarge = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.2.sp),
+    labelMedium = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 12.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.4.sp),
+    labelSmall = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 10.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.7.sp),
 )
 
 @Composable

@@ -36,6 +36,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -88,9 +89,6 @@ import com.gguf.zerocopy.ui.models.ModelListScreen
 import com.gguf.zerocopy.ui.sessions.SessionListScreen
 import com.gguf.zerocopy.ui.settings.SettingsScreen
 import com.gguf.zerocopy.ui.settings.ThemeSettingsScreen
-import com.gguf.zerocopy.ui.components.IdentityCyan
-import com.gguf.zerocopy.ui.components.IdentityGreen
-import com.gguf.zerocopy.ui.components.IdentityPurple
 import com.gguf.zerocopy.ui.theme.ThemeManagerInstance
 import com.gguf.zerocopy.ui.theme.ZeroCopyTheme
 import com.gguf.zerocopy.ui.theme.ZcPalette
@@ -200,14 +198,14 @@ fun AppRoot() {
     bottomBar = {
       val navColors = currentPalette()
       Column {
-        // Gradient hairline — the nav bar feels connected to the input bubble
-        // above it (both carry the app's cyan→purple ring).
+        // Sunrise hairline — the nav bar feels connected to the chat bubble
+        // above it (both carry the dawn coral→amber ring).
         Box(
-          Modifier.fillMaxWidth().height(1.dp)
-            .background(Brush.horizontalGradient(listOf(IdentityCyan, IdentityPurple)))
+          Modifier.fillMaxWidth().height(2.dp)
+            .background(Brush.horizontalGradient(listOf(navColors.GradientStart, navColors.GradientEnd)))
         )
         NavigationBar(
-          containerColor = navColors.Surface,
+          containerColor = navColors.Card,
           tonalElevation = 0.dp
         ) {
           navItems.forEachIndexed { idx, item ->
@@ -457,14 +455,14 @@ fun AppRoot() {
 
 /** Animated bottom-bar sprite: outlined when idle, filled + glowing when active,
  *  with a pop-in scale and — for Invent's lightbulb — a warm "turned on" pulse. */
-/** Animated bottom-bar sprite: outlined when idle, filled when active, with a
- *  3D flip switching effect (rotationY + crossfade), a soft radial glow halo,
- *  and — for Invent's lightbulb — warm amber rays. Every icon has its own color. */
+/** Animated bottom-bar sprite: outlined when idle, filled + glowing when active,
+ *  with a pop-in scale and — for Invent's lightbulb — a warm "turned on" pulse.
+ *  Aurora Ember: every icon carries its own sunrise-derived hue. */
 @Composable
 private fun NavSprite(item: NavItem, isSelected: Boolean, colors: ZcPalette) {
   // Every icon has its own color — dim when idle, full + glow when active
   val tabColor = navTabColor(item.label, colors)
-  val idleTint = if (isSelected) tabColor else colors.Accent.copy(alpha = 0.55f)
+  val idleTint = if (isSelected) tabColor else tabColor.copy(alpha = 0.5f)
   val halo = remember { Animatable(if (isSelected) 1f else 0f) }
   // Icon flip progress: 0 = idle icon, 1 = active icon (3D switching effect)
   val flip by animateFloatAsState(
@@ -491,7 +489,7 @@ private fun NavSprite(item: NavItem, isSelected: Boolean, colors: ZcPalette) {
         Modifier.size(30.dp).clip(RoundedCornerShape(10.dp))
           .background(
             Brush.linearGradient(
-              listOf(IdentityCyan.copy(alpha = 0.14f), IdentityPurple.copy(alpha = 0.14f))
+              listOf(colors.GradientStart.copy(alpha = 0.16f), colors.GradientEnd.copy(alpha = 0.16f))
             )
           )
       )
@@ -532,21 +530,21 @@ private fun NavSprite(item: NavItem, isSelected: Boolean, colors: ZcPalette) {
 }
 
 private fun navTabColor(label: String, colors: ZcPalette): Color = when (label) {
-  "Chat" -> colors.Accent2
-  "Models" -> colors.Accent
-  "Server" -> colors.Amber
-  "Settings" -> colors.Purple
-  else -> colors.Cyan // Invent bulb cyan
+  "Chat" -> colors.Accent        // coral — the hero tab
+  "Models" -> colors.Cyan        // AI indicator
+  "Server" -> colors.Amber       // running service
+  "Settings" -> colors.Purple    // neutral violet
+  else -> colors.Accent2         // Invent — emerald "go"
 }
 
 /** Per-tab gradient for the selected bottom-nav pill — each tab its own pair.
- *  Aurora v2: gradients derive from the active palette (no off-brand hues). */
+ *  Aurora Ember: gradients derive from the active palette (no off-brand hues). */
 private fun navGradient(label: String, colors: ZcPalette): Brush = when (label) {
-  "Chat" -> Brush.linearGradient(listOf(colors.Cyan, colors.Accent))
-  "Models" -> Brush.linearGradient(listOf(colors.Accent2, colors.Accent))
-  "Server" -> Brush.linearGradient(listOf(colors.Cyan, colors.Purple))
-  "Settings" -> Brush.linearGradient(listOf(colors.Purple, colors.Accent))
-  else -> Brush.linearGradient(listOf(colors.GradientStart, colors.GradientEnd)) // Invent
+  "Chat" -> Brush.linearGradient(listOf(colors.GradientStart, colors.GradientEnd))
+  "Models" -> Brush.linearGradient(listOf(colors.Cyan, colors.Accent))
+  "Server" -> Brush.linearGradient(listOf(colors.Amber, colors.Accent))
+  "Settings" -> Brush.linearGradient(listOf(colors.Purple, colors.Cyan))
+  else -> Brush.linearGradient(listOf(colors.Accent2, colors.Cyan)) // Invent
 }
 
 @Composable
@@ -569,37 +567,50 @@ fun SplashScreen(onDone: () -> Unit) {
     contentAlignment = Alignment.Center
   ) {
     Column(modifier = Modifier.graphicsLayer { alpha = splashAlpha.value }, horizontalAlignment = Alignment.CenterHorizontally) {
-      // ---- Glowing layered logo ----
-      Box(contentAlignment = Alignment.Center) {
-        // Layer 1 (back): large square glow
+      // ---- Glowing layered logo (Aurora Ember) ----
+      val logoScale = remember { Animatable(0.86f) }
+      LaunchedEffect(Unit) {
+        logoScale.animateTo(1f, spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium))
+      }
+      Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.graphicsLayer { scaleX = logoScale.value; scaleY = logoScale.value }
+      ) {
+        // Layer 1 (back): large rounded dawn-glow
         Box(
-          modifier = Modifier.size(140.dp)
-            .clip(RoundedCornerShape(32.dp))
+          modifier = Modifier.size(148.dp)
+            .clip(RoundedCornerShape(38.dp))
             .background(glow1)
         )
-        // Layer 2 (middle): circle glow
+        // Layer 2 (middle): circular ember glow
         Box(
-          modifier = Modifier.size(120.dp)
+          modifier = Modifier.size(124.dp)
             .clip(androidx.compose.foundation.shape.CircleShape)
             .background(glow2)
         )
-        // Layer 3 (front): main rounded square with ZC
+        // Layer 3 (front): sunrise gradient tile with the ZC mark
         Box(
-          modifier = Modifier.size(100.dp)
-            .clip(RoundedCornerShape(28.dp))
+          modifier = Modifier.size(104.dp)
+            .clip(RoundedCornerShape(30.dp))
             .background(Brush.linearGradient(listOf(colors.GradientStart, colors.GradientEnd))),
           contentAlignment = Alignment.Center
         ) {
-          Text("ZC", fontSize = 36.sp, fontWeight = FontWeight.Black,
-            color = Color.White, fontFamily = FontFamily.SansSerif)
+          Text("ZC", fontSize = 38.sp, fontWeight = FontWeight.Black,
+            color = Color.White, fontFamily = FontFamily.SansSerif, letterSpacing = (-1).sp)
         }
       }
-      Spacer(Modifier.height(20.dp))
-      Text("ZeroCopy", fontSize = 28.sp, fontWeight = FontWeight.Light,
-        color = colors.Text2, fontFamily = FontFamily.SansSerif, letterSpacing = 4.sp)
-      Spacer(Modifier.height(8.dp))
+      Spacer(Modifier.height(24.dp))
+      Text("ZeroCopy", fontSize = 30.sp, fontWeight = FontWeight.Light,
+        color = colors.Text, fontFamily = FontFamily.SansSerif, letterSpacing = 6.sp)
+      Spacer(Modifier.height(14.dp))
+      // Sunrise hairline under the wordmark
+      Box(
+        Modifier.width(64.dp).height(3.dp).clip(RoundedCornerShape(2.dp))
+          .background(Brush.horizontalGradient(listOf(colors.GradientStart, colors.GradientEnd)))
+      )
+      Spacer(Modifier.height(14.dp))
       Text("by adeennour4-dot", fontSize = 12.sp, fontWeight = FontWeight.Normal,
-        color = colors.Text3, fontFamily = FontFamily.SansSerif)
+        color = colors.Text3, fontFamily = FontFamily.SansSerif, letterSpacing = 1.sp)
     }
   }
 }

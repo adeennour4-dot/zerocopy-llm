@@ -6,15 +6,15 @@
 |-------|-----------|---------|--------|
 | Language | Kotlin | 2.4.x | ✅ |
 | Android SDK | compileSdk | 36 | ✅ |
-| Min SDK | minSdk | 27 | ✅ |
-| Build | Gradle + AGP | 9.x | ✅ |
+| Min SDK | minSdk | 29 (Android 10) | ✅ |
+| Build | Gradle 9.3.1 + AGP | 8.7.3 | ✅ |
 | UI | Jetpack Compose + Material3 | BOM 2026.05.00 | ✅ |
 | Coroutines | kotlinx-coroutines | 1.10.1 | ✅ |
 | **Engine: llama.cpp** | ggml-org/llama.cpp | b9581 (pinned) | ✅ |
 | **Engine: MNN** | alibaba/MNN | 3.5.0 (pinned) | ✅ |
 | **Engine: LiteRT-LM** | com.google.ai.edge.litertlm | 0.13.0 | ✅ |
 | **Rust core** | jni + serde | as needed | ✅ |
-| CI | GitHub Actions | ubuntu-24.04 + NDK r28c | ✅ |
+| CI | GitHub Actions | ubuntu-latest (24.04) + NDK 27.0.12077973 (r27) | ✅ |
 
 ## [FEATURES]
 

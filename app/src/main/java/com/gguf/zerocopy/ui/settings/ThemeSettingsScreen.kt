@@ -246,6 +246,7 @@ fun ThemeSettingsScreen(onBack: () -> Unit) {
 
   Scaffold(
     topBar = {
+      Column {
       TopAppBar(
         title = { Text("Appearance", fontWeight = FontWeight.Bold, color = colors.Text) },
         navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, "Back", tint = colors.Text) } },
@@ -259,6 +260,11 @@ fun ThemeSettingsScreen(onBack: () -> Unit) {
         },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = colors.Bg)
       )
+      Box(
+        Modifier.fillMaxWidth().height(2.dp)
+          .background(Brush.horizontalGradient(listOf(colors.GradientStart, colors.GradientEnd)))
+      )
+      }
     },
     snackbarHost = { SnackbarHost(snackbarHostState) },
     containerColor = colors.Bg

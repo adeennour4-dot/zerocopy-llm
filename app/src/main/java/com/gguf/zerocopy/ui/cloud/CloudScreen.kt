@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -124,11 +125,17 @@ fun CloudScreen(onBack: () -> Unit) {
 
   Scaffold(
     topBar = {
+      Column {
       TopAppBar(
         title = { Text("Server", fontWeight = FontWeight.Bold, color = colors.Text) },
         navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, "Back", tint = colors.Text2) } },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = colors.Bg)
       )
+      Box(
+        Modifier.fillMaxWidth().height(2.dp)
+          .background(Brush.horizontalGradient(listOf(colors.GradientStart, colors.GradientEnd)))
+      )
+      }
     },
     containerColor = colors.Bg
   ) { pad ->

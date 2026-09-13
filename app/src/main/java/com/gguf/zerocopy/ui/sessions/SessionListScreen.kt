@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -73,6 +74,7 @@ fun SessionListScreen(
 
   Scaffold(
     topBar = {
+      Column {
       TopAppBar(
         title = { Text("Sessions", fontWeight = FontWeight.Bold, color = colors.Text) },
         navigationIcon = {
@@ -82,6 +84,11 @@ fun SessionListScreen(
         },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = colors.Bg)
       )
+      Box(
+        Modifier.fillMaxWidth().height(2.dp)
+          .background(Brush.horizontalGradient(listOf(colors.GradientStart, colors.GradientEnd)))
+      )
+      }
     },
     floatingActionButton = {
       FloatingActionButton(

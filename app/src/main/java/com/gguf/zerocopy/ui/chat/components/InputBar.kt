@@ -42,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -244,13 +245,16 @@ fun InputBar(
               Icon(Icons.Filled.Stop, "Stop", tint = colors.Red, modifier = Modifier.size(16.dp))
             }
           } else {
-            // Send control — flat accent fill when ready, muted otherwise
+            // Send control — sunrise gradient fill when ready, muted otherwise
             val canSend = enabled && prompt.isNotBlank()
             Box(
               modifier = Modifier
                 .size(36.dp)
                 .clip(CircleShape)
-                .background(if (canSend) colors.Accent else colors.CardLight)
+                .background(
+                  if (canSend) Brush.linearGradient(listOf(colors.GradientStart, colors.GradientEnd))
+                  else colors.CardLight
+                )
                 .clickable(enabled = canSend) {
                   val text = prompt
                   prompt = ""

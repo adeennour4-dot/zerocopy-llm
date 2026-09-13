@@ -260,6 +260,7 @@ fun SettingsScreen(onBack: () -> Unit) {
 
   Scaffold(
     topBar = {
+      Column {
       TopAppBar(
         title = { Text("Settings", fontWeight = FontWeight.Bold, color = colors.Text) },
         navigationIcon = {
@@ -270,6 +271,11 @@ fun SettingsScreen(onBack: () -> Unit) {
         },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = colors.Bg)
       )
+      Box(
+        Modifier.fillMaxWidth().height(2.dp)
+          .background(Brush.horizontalGradient(listOf(colors.GradientStart, colors.GradientEnd)))
+      )
+      }
     },
     containerColor = colors.Bg,
     snackbarHost = { SnackbarHost(snackbarHostState) }
