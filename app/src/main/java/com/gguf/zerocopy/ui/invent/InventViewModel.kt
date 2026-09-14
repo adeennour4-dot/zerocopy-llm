@@ -11,6 +11,7 @@ import com.gguf.zerocopy.data.invent.*
 import com.gguf.zerocopy.data.local.SettingsManager
 import com.gguf.zerocopy.domain.invent.GgufMetaReader
 import com.gguf.zerocopy.domain.inference.InferenceConfig
+import com.gguf.zerocopy.domain.inference.LlamaCppEngine
 import com.gguf.zerocopy.domain.inference.RepeatPenaltyConfig
 import com.gguf.zerocopy.domain.inference.TokenCallback
 import com.gguf.zerocopy.domain.inference.ToolCall
@@ -1888,11 +1889,11 @@ class InventViewModel(app: Application) : AndroidViewModel(app) {
             "Use <think> tags for step-by-step reasoning before answering.\n\n" else ""
         // Prompt construction is fallible (huge history, template edge cases) —
         // never let it crash the session; degrade to the raw message instead.
-        val built: Pair<String, Int> = try {
+        val built: Triple<String, Int, List<Pair<String, String>>> = try {
             buildPromptWithInfo(systemPrompt, history, "$thinkPrefix$userMessage")
         } catch (e: Exception) {
             _ui.value = _ui.value.copy(error = "Prompt build failed: ${e.message}")
-            ("$thinkPrefix$userMessage") to 0
+            Triple("$thinkPrefix$userMessage", 0, history)
         }
         val fullPrompt = built.first
         val compacted = built.second
@@ -1927,7 +1928,21 @@ class InventViewModel(app: Application) : AndroidViewModel(app) {
 
         try {
             withTimeout(120_000L) { // 2 min timeout to prevent hangs
-                engine.executeInference(fullPrompt, callback)
+                // GGUF (llama.cpp): hand RAW text + history to the engine so the
+                // chat template is applied exactly ONCE, natively — exactly like
+                // the Chat tab. Passing a pre-formatted blob here made native
+                // executeWithCallbackNative re-wrap it as a single "user" turn,
+                // double-applying the template (nested special tokens, bloated
+                // prompt) which was a crash source on Invent's first message.
+                if (engine is LlamaCppEngine) {
+                    engine.systemPrompt = systemPrompt
+                    engine.restoreHistory(built.third)
+                    engine.executeInference("$thinkPrefix$userMessage", callback)
+                } else {
+                    // MNN / LiteRT engines: no native template — keep the Kotlin
+                    // formatted prompt (buildPromptWithInfo handles it).
+                    engine.executeInference(fullPrompt, callback)
+                }
             }
         } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
             sb.append("[ERROR: Inference timed out after 2 minutes]")
@@ -2138,7 +2153,7 @@ Example:
 
     private fun buildPromptWithInfo(
         system: String, history: List<Pair<String, String>>, user: String
-    ): Pair<String, Int> {
+    ): Triple<String, Int, List<Pair<String, String>>> {
         val activePath = engineManager.getActiveEngine()?.loadedModelPath ?: ""
         val inventCfg = getInventConfigForActiveModel()
         val modelCfg = inventCfg ?: SettingsManager.getModelTokenConfig(activePath)
@@ -2177,7 +2192,7 @@ Example:
         } else null
 
         if (jniResult != null) {
-            return jniResult to compactedHistory.size
+            return Triple(jniResult, compactedHistory.size, compactedHistory)
         }
 
         // Fallback: manual template formatting (MNN engine or JNI unavailable)
@@ -2209,7 +2224,7 @@ Example:
                 append(formatRole(template, "assistant").first)
             }
         }
-        return prompt to compactedHistory.size
+        return Triple(prompt, compactedHistory.size, compactedHistory)
     }
 
     // ── Conversation history ───────────────────────────────────────────────

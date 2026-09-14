@@ -51,6 +51,7 @@
 #include <fstream>
 #include <algorithm>
 #include <signal.h>
+#include <exception>
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
@@ -877,6 +878,10 @@ Java_com_gguf_zerocopy_domain_inference_NativeBridge_loadGgufModelNative(
     llama_model_params mparams = llama_model_default_params();
     mparams.n_gpu_layers = g_cfg.n_gpu_layers;
 
+    // Model + context init can throw std::bad_alloc under memory pressure;
+    // letting a C++ exception cross the JNI boundary SIGABRTs the app.
+    // Catch here and fail gracefully so the caller shows "failed to load".
+    try {
     g_model = llama_model_load_from_file(path_copy.c_str(), mparams);
     if (!g_model) {
         LOGE("Failed to load model: %s", path_copy.c_str());
@@ -948,6 +953,17 @@ Java_com_gguf_zerocopy_domain_inference_NativeBridge_loadGgufModelNative(
          cparams.n_ctx, cparams.n_batch, cparams.n_ubatch,
          g_cfg.n_gpu_layers, n_threads, total_cores,
          (int)g_cfg.low_ram_mode, (int)use_flash_attn);
+    } catch (const std::exception& e) {
+        LOGE("Native init threw (out of memory?): %s", e.what());
+        if (g_ctx)     { llama_free(g_ctx);              g_ctx     = nullptr; }
+        if (g_model)   { llama_model_free(g_model);      g_model   = nullptr; }
+        g_history.clear();
+        g_ctx_actual = 0;
+        g_batch_actual = 0;
+        g_flash_attn_effective = false;
+        g_model_path = "";
+        return JNI_FALSE;
+    }
     return JNI_TRUE;
 }
 
