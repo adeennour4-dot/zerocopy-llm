@@ -75,6 +75,10 @@ object NativeBridge {
   external fun formatWithChatTemplateNative(messagesJson: String): String
   external fun unloadModelNative()
 
+  /** Non-blocking unload: false if the native bridge is busy (load/generation
+   *  in flight). Caller should retry on a background thread, never block. */
+  external fun tryUnloadModelNative(): Boolean
+
   external fun getNativeDiagnosticsNative(): String
 
   /** Path where the native crash backtrace handler writes its trace file. */

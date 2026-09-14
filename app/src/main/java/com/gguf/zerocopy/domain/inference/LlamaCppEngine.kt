@@ -4,6 +4,8 @@ import android.util.Log
 import com.gguf.zerocopy.ZeroCopyApp
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -38,6 +40,10 @@ class LlamaCppEngine : InferenceEngine {
   private var currentModelPath = ""
   private var _toolManager: ToolManager? = null
   private var activeCallback: NativeBridge.TokenCallback? = null
+  /** Deferred unloads when the native bridge is busy (load/generation in flight). */
+  private val unloadExecutor: ExecutorService = Executors.newSingleThreadExecutor { runnable ->
+    Thread(runnable, "zero-copy-unload").apply { isDaemon = true }
+  }
 
   /**
    * Snapshot of the last history JSON passed by ChatScreen via restoreHistory().
@@ -76,7 +82,19 @@ class LlamaCppEngine : InferenceEngine {
   }
 
   override fun unloadModel() {
-    NativeBridge.unloadModelNative()
+    if (nativeLibLoaded) {
+      if (!NativeBridge.tryUnloadModelNative()) {
+        // Bridge is busy (model load or a generation in flight holds the
+        // native mutex). Abort generation so it winds down, then free the
+        // globals on a background thread — NEVER block the caller (often the
+        // UI thread) on a reload-cancel or unload button tap.
+        NativeBridge.abortInferenceNative()
+        inferenceAborted.set(true)
+        unloadExecutor.execute {
+          try { NativeBridge.unloadModelNative() } catch (_: Throwable) {}
+        }
+      }
+    }
     isModelLoaded = false; modelInfo = null; currentModelPath = ""
     lastRestoredHistoryJson = "[]"
     _toolManager = null  // clear tool manager so it doesn't leak into Invent

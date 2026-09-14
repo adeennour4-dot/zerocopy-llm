@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gguf.zerocopy.data.local.SettingsManager
 import com.gguf.zerocopy.domain.device.DeviceUtils
+import com.gguf.zerocopy.ui.components.ChatTemplateSelector
 import com.gguf.zerocopy.ui.components.ZcPillButton
 import com.gguf.zerocopy.ui.theme.ZcPalette
 import com.gguf.zerocopy.ui.theme.currentPalette
@@ -41,6 +42,9 @@ fun ModelTokenConfigDialog(
     onSave: (SettingsManager.ModelTokenConfig) -> Unit,
     onDismiss: () -> Unit,
     onRemove: (() -> Unit)? = null,
+    /** True when this model is the currently loaded one — shows the Unload button. */
+    isLoaded: Boolean = false,
+    onUnload: (() -> Unit)? = null,
     /** Maximum context the loaded model supports (from GGUF metadata).
      *  Slider is capped to this value instead of 32768. */
     modelContextLength: Int = 32768
@@ -78,6 +82,8 @@ fun ModelTokenConfigDialog(
     var batchText by remember { mutableStateOf((initial.nBatch ?: SettingsManager.nBatch).toString()) }
     // "auto" = inherit the global backend; "cpu"/"gpu" = explicit per-model override.
     var backendSel by remember { mutableStateOf(initial.backend ?: SettingsManager.backend) }
+    // Per-model chat template; "auto" inherits the global / model metadata.
+    var templateSel by remember { mutableStateOf(initial.chatTemplate.ifEmpty { "auto" }) }
 
     // ── RAM calc ──
     val kvCacheMB by remember {
@@ -125,7 +131,8 @@ fun ModelTokenConfigDialog(
             lowRamMode = lowRamSwitch,
             threads = threadsText.toIntOrNull()?.coerceIn(1, 16),
             nBatch = batchText.toIntOrNull()?.coerceIn(512, 8192),
-            backend = if (backendSel == "auto") null else backendSel
+            backend = if (backendSel == "auto") null else backendSel,
+            chatTemplate = templateSel
         )
     }
 
@@ -329,6 +336,21 @@ fun ModelTokenConfigDialog(
 
                 HorizontalDivider(color = colors.Border.copy(0.5f))
 
+                // ── Chat template (per-model override) ──
+                Column {
+                  Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text("Chat Template", fontSize = 11.sp, color = colors.Text2,
+                        fontFamily = FontFamily.SansSerif, modifier = Modifier.weight(1f))
+                    ChatTemplateSelector(current = templateSel, onChange = { templateSel = it }, colors = colors)
+                  }
+                  Text(
+                    if (templateSel == "auto") "Auto — inherit Settings / model metadata"
+                    else "Overrides the global template for this model",
+                    fontSize = 9.sp, color = colors.Text3, fontFamily = FontFamily.SansSerif,
+                    modifier = Modifier.padding(top = 2.dp)
+                  )
+                }
+
                 // ── Sampling ──
                 SectionHeader("Sampling", colors)
                 SamplingField("Temperature", "0-2", tempText, { tempText = it }, colors)
@@ -379,8 +401,16 @@ fun ModelTokenConfigDialog(
                     }
                 }
 
-                // ── Reset / Remove / Save buttons ──
+                // ── Reset / Unload / Remove / Save buttons ──
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (isLoaded && onUnload != null) {
+                        OutlinedButton(
+                            onClick = onUnload,
+                            modifier = Modifier.weight(1f),
+                            shape = ZcShape.Pill,
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.Red)
+                        ) { Text("Unload", fontSize = 11.sp, fontFamily = FontFamily.SansSerif) }
+                    }
                     OutlinedButton(
                         onClick = {
                             ctxSlider = SettingsManager.nCtx.coerceIn(512, 32768)
@@ -400,6 +430,7 @@ fun ModelTokenConfigDialog(
                             threadsText = SettingsManager.threads.toString()
                             batchText = SettingsManager.nBatch.toString()
                             backendSel = SettingsManager.backend
+                            templateSel = SettingsManager.chatTemplate
                         },
                         modifier = Modifier.weight(1f),
                         shape = ZcShape.Pill,

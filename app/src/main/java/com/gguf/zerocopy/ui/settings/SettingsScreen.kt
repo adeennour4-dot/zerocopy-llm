@@ -1,4 +1,5 @@
 package com.gguf.zerocopy.ui.settings
+import com.gguf.zerocopy.ui.components.ChatTemplateSelector
 import com.gguf.zerocopy.ui.theme.ZcShape
 
 import android.app.Activity
@@ -222,7 +223,11 @@ fun SettingsScreen(onBack: () -> Unit) {
       it.config = if (modelPath != null) SettingsManager.toConfig(modelPath) else cfg
       it.repeatPenalty = rp
       it.systemPrompt = sysPrompt
-      it.chatTemplate = chatTemplate
+      // Don't flatten a per-model template override when saving the global settings.
+      val globalTemplate = if (modelPath != null) {
+        SettingsManager.getModelTokenConfig(modelPath)?.chatTemplate?.takeIf { s -> s.isNotBlank() }
+      } else null
+      it.chatTemplate = globalTemplate ?: chatTemplate
     }
   }
 
@@ -250,7 +255,9 @@ fun SettingsScreen(onBack: () -> Unit) {
         )
         eng.repeatPenalty = SettingsManager.toRepeatPenalty()
         eng.systemPrompt = SettingsManager.systemPrompt
-        eng.chatTemplate = SettingsManager.chatTemplate
+        // Honor a per-model template override, else fall back to the global one.
+        eng.chatTemplate = SettingsManager.getModelTokenConfig(path)
+          ?.chatTemplate?.takeIf { it.isNotBlank() } ?: SettingsManager.chatTemplate
         eng.loadModel(path)
       }
     }
@@ -908,19 +915,6 @@ fun SettingField(label: String, hint: String, value: String, onChange: (String) 
 }
 
 @Composable
-private fun ChatTemplateSelector(
-  current: String, onChange: (String) -> Unit, colors: ZcPalette
-) {
-  val options = listOf(
-    "auto" to "Auto-detect", "chatml" to "ChatML",
-    "gemma" to "Gemma", "llama3" to "Llama 3",
-    "deepseek" to "DeepSeek", "qwen" to "Qwen",
-    "mistral" to "Mistral", "phi" to "Phi"
-  )
-  // Placeholder — implement dropdown with options
-  Text("Selected: $current", fontSize = 10.sp, color = colors.Text3)
-}
-
 private fun sendLogs(context: android.content.Context) {
   // Placeholder for logs sending
 }

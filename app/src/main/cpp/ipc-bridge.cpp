@@ -817,10 +817,7 @@ Java_com_gguf_zerocopy_domain_inference_NativeBridge_resetContextNative(
     LOGI("Context reset");
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_com_gguf_zerocopy_domain_inference_NativeBridge_unloadModelNative(
-        JNIEnv*, jobject) {
-    std::lock_guard<std::mutex> lock(g_mtx);
+static void do_unload_locked() {
     LOGI("Unloading native model");
     g_history.clear();
     g_abort.store(false);
@@ -836,6 +833,25 @@ Java_com_gguf_zerocopy_domain_inference_NativeBridge_unloadModelNative(
     g_model_path = "";
     g_cfg.mmproj_path = "";
     LOGI("Native model unloaded");
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_gguf_zerocopy_domain_inference_NativeBridge_unloadModelNative(
+        JNIEnv*, jobject) {
+    std::lock_guard<std::mutex> lock(g_mtx);
+    do_unload_locked();
+}
+
+// Non-blocking unload: returns false if the bridge mutex is busy (a model
+// load or a generation is in flight). The caller then frees on a background
+// thread instead of blocking the caller (which may be the UI thread).
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_gguf_zerocopy_domain_inference_NativeBridge_tryUnloadModelNative(
+        JNIEnv*, jobject) {
+    std::unique_lock<std::mutex> lock(g_mtx, std::try_to_lock);
+    if (!lock.owns_lock()) return JNI_FALSE;
+    do_unload_locked();
+    return JNI_TRUE;
 }
 
 extern "C" JNIEXPORT void JNICALL

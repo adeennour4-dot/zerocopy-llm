@@ -137,7 +137,9 @@ object SettingsManager {
     val flashAttention: Boolean? = null,
     val lowRamMode: Boolean? = null,
     val threads: Int? = null,
-    val nBatch: Int? = null
+    val nBatch: Int? = null,
+    /** Per-model chat template override: "auto" = inherit global / model metadata. */
+    val chatTemplate: String = "auto"
   )
 
   private var _modelConfigsCache: MutableMap<String, ModelTokenConfig>? = null
@@ -167,7 +169,8 @@ object SettingsManager {
           flashAttention = if (obj.has("flashAttention")) obj.optBoolean("flashAttention") else null,
           lowRamMode = if (obj.has("lowRamMode")) obj.optBoolean("lowRamMode") else null,
           threads = if (obj.has("threads")) obj.optInt("threads") else null,
-          nBatch = if (obj.has("nBatch")) obj.optInt("nBatch") else null
+          nBatch = if (obj.has("nBatch")) obj.optInt("nBatch") else null,
+          chatTemplate = if (obj.has("chatTemplate")) obj.getString("chatTemplate") else "auto"
         )
       }
     } catch (_: Exception) {}
@@ -196,6 +199,7 @@ object SettingsManager {
           cfg.lowRamMode?.let { put("lowRamMode", it) }
           cfg.threads?.let { put("threads", it) }
           cfg.nBatch?.let { put("nBatch", it) }
+          cfg.chatTemplate.takeIf { it.isNotBlank() }?.let { put("chatTemplate", it) }
         })
       }
       prefs?.edit()?.putString("model_token_configs", json.toString())?.apply()

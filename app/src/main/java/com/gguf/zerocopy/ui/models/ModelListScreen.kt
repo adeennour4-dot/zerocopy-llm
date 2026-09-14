@@ -493,6 +493,20 @@ fun ModelListScreen(
             tokenConfigModel = null
             pendingImport = false
             // Don't load — user chose to remove config
+          },
+          isLoaded = loadedModelPath == model.path,
+          onUnload = {
+            tokenConfigModel = null
+            scope.launch {
+              val eng = app.engineManager.getActiveEngine()
+              if (eng != null) {
+                // unloadModel is non-blocking: aborts generation and, if the
+                // native bridge is busy, frees on a background thread.
+                eng.unloadModel()
+              }
+              ModelLoadMonitor.clear()
+              snackbarHostState.showSnackbar("${model.name} unloaded")
+            }
           }
         )
       }
@@ -1079,7 +1093,7 @@ private suspend fun loadModel(
   ModelLoadMonitor.step("Configuring ${engine.engineType.id}…")
   engine.repeatPenalty = SettingsManager.toRepeatPenalty()
   engine.systemPrompt = SettingsManager.systemPrompt
-  engine.chatTemplate = SettingsManager.chatTemplate
+  engine.chatTemplate = perModelCfg?.chatTemplate?.takeIf { it.isNotBlank() } ?: SettingsManager.chatTemplate
 
   // Auto-detect an mmproj (vision projector) file for GGUF models and load it
   // automatically. Common naming conventions: <model>.mmproj (HuggingFace),
