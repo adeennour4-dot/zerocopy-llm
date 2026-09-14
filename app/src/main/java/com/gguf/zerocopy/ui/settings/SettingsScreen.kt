@@ -914,7 +914,6 @@ fun SettingField(label: String, hint: String, value: String, onChange: (String) 
   }
 }
 
-@Composable
 private fun sendLogs(context: android.content.Context) {
   // Placeholder for logs sending
 }
